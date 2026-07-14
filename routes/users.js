@@ -241,6 +241,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
                 id: user._id,
                 email: user.email,
                 name: user.name,
+                lastname: user.lastname,
                 picture: user.picture
             }
         });
@@ -263,6 +264,12 @@ router.put('/favorites', authenticateToken, async (req, res) => {
         }
 
         const {favorite_id} = body;
+
+        if(typeof(favorite_id) !== 'number') {
+            return res.status(400).json({
+                message: 'El ID del favorito debe ser un número.'
+            })
+        }
 
         const user = await User.findById(req.user.id);
 
