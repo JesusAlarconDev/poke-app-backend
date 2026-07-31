@@ -64,7 +64,7 @@ router.post('/register', async (req, res) => {
             })
         }
 
-        const {email, password, name, lastname} = body;
+        const {email, password, name, lastname, picture} = body;
 
         // Validaciones
         const emailValidation = validateEmail(email);
@@ -97,7 +97,8 @@ router.post('/register', async (req, res) => {
             email: email.toLowerCase(),
             password,
             name: name.trim(),
-            lastname: lastname.trim()
+            lastname: lastname.trim(),
+            picture: picture || ''
         });
         const token = jwt.sign(
             { id: user._id },
@@ -112,13 +113,15 @@ router.post('/register', async (req, res) => {
                 email: user.email,
                 name: user.name,
                 lastname: user.lastname,
+                picture: user.picture,
                 favorites: [],
             }
         })
     } catch (err) {
-        console.error(err);
+        console.error('Error en registro:', err);
         res.status(500).json({
-            message: 'Error al crear el usuario.'
+            message: 'Error al crear el usuario.',
+            error: err.message
         })
     }
 });
@@ -162,6 +165,7 @@ router.post('/login', async (req, res) => {
                 email: user.email,
                 name: user.name,
                 lastname: user.lastname,
+                picture: user.picture,
                 favorites: [],
             }
         })
@@ -272,6 +276,12 @@ router.put('/favorites', authenticateToken, async (req, res) => {
         }
 
         const user = await User.findById(req.user.id);
+        
+        if (!user) {
+            return res.status(404).json({
+                message: 'Usuario no encontrado'
+            });
+        }
 
         if(user.favorites.includes(favorite_id)) {
             user.favorites = user.favorites.filter(id => id !== favorite_id).sort();
@@ -286,9 +296,10 @@ router.put('/favorites', authenticateToken, async (req, res) => {
             favorites: user.favorites
         });
     } catch (err) {
-        console.error(err);
+        console.error('Error en favorites:', err);
         res.status(500).json({
-            message: 'Error al actualizar favoritos'
+            message: 'Error al actualizar favoritos',
+            error: err.message
         })
     }
 });
