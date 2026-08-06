@@ -166,7 +166,6 @@ router.post('/login', async (req, res) => {
                 name: user.name,
                 lastname: user.lastname,
                 picture: user.picture,
-                favorites: [],
             }
         })
     } catch (err) {
@@ -292,9 +291,7 @@ router.put('/favorites', authenticateToken, async (req, res) => {
 
         await user.save();
 
-        res.status(200).json({
-            favorites: user.favorites
-        });
+        res.status(204).send();
     } catch (err) {
         console.error('Error en favorites:', err);
         res.status(500).json({
@@ -303,5 +300,29 @@ router.put('/favorites', authenticateToken, async (req, res) => {
         })
     }
 });
+
+// GET /favorites -> Get User Favorites
+router.get('/favorites', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        
+        if (!user) {
+            return res.status(404).json({
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        res.status(200).json({
+            favorites: user.favorites
+        });
+    } catch (err) {
+        console.error('Error al cargar favoritos:', err);
+        res.status(500).json({
+            message: 'Error al cargar favoritos',
+            error: err.message
+        })
+    }
+});
+
 
 export default router;
